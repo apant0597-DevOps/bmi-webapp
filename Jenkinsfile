@@ -9,7 +9,7 @@ pipeline {
         stage('MAVEN BUILD'){
             steps{
                 sh 'mvn clean package -Dmaven.test.skip=true'
-                sh 'mv target/*.war target/tomcat-app.war'
+                sh 'mv target/*.jar target/tomcat-app.jar'
             }
         }
         stage('TEST'){
@@ -22,7 +22,7 @@ pipeline {
                 sshagent(['jenkins-agent-creds']) {
                     sh '''
                 
-                    scp -o StrictHostKeyChecking=no target/tomcat-app.war ec2-user@35.86.109.81:/opt/tomcat9/webapps
+                    scp -o StrictHostKeyChecking=no target/tomcat-app.jar ec2-user@35.86.109.81:/opt/tomcat9/webapps
                     ssh ec2-user@35.86.109.81 /opt/tomcat9/bin/shutdown.sh
                     ssh ec2-user@35.86.109.81 /opt/tomcat9/bin/startup.sh
                 
