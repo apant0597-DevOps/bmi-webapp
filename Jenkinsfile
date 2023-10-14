@@ -1,20 +1,34 @@
 
 pipeline {
-    agent any
+    agents any
     tools {
 	    maven 'maven-jenkins'
     }
+    
     stages {
         stage('MAVEN BUILD'){
             steps{
-                 sh 'mvn clean package -Dmaven.test.skip=true'
+                sh 'mvn clean package -Dmaven.test.skip=true'
+                sh 'mv target/*.jar target/tomcat-app.jar'
             }
         }
         stage('TEST'){
-            steps {
+            steps{
                 sh 'mvn test'
             }
         }
+        stage('DEPLOY'){
+            steps {
+                sshagent(['jenkins-agent-creds']) {
+                    sh '''
+                
+                    scp -o StrictHostKeyChecking=no target/tomcat-app.jar ec2-user@35.86.109.81:/opt/tomcat9/webapps
+                    ssh ec2-user@35.86.109.81 /opt/tomcat9/bin/shutdown.sh
+                    ssh ec2-user@35.86.109.81 /opt/tomcat9/bin/startup.sh
+                
+                    '''
+            }
+        } 
     }
     post {
         success { 
